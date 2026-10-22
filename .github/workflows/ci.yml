@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+
+  kernel:
+    name: kernel tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Kernel and Landlock ABI
+        run: |
+          uname -r
+          cat /sys/kernel/security/lsm || true
+          cargo run -q -- abi
+      - name: Tests (Landlock must be present; scenarios up to ABI 4 must run)
+        env:
+          LANDLOCK_SMOKE_REQUIRE_ABI: "4"
+        run: cargo test
+      - name: Self-test matrix
+        run: cargo run -q --release -- selftest --require-abi 4
+
+  msrv:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@1.75
+      - run: cargo build --all-targets
