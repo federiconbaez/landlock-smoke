@@ -5,6 +5,7 @@
 //! therefore consumes the builder and should be the last thing a thread does
 //! before running untrusted work.
 
+pub mod selftest;
 pub mod sys;
 
 use std::fmt;
