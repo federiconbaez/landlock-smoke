@@ -1,0 +1,16 @@
+[package]
+name = "landlock-smoke"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "Apache-2.0"
+description = "Minimal Landlock LSM bindings over raw syscalls, a sandboxing exec wrapper and a kernel self-test matrix"
+repository = "https://github.com/federiconbaez/landlock-smoke"
+keywords = ["landlock", "sandbox", "linux", "security", "lsm"]
+categories = ["os::linux-apis", "command-line-utilities"]
+
+[dependencies]
+libc = "0.2"
+
+[profile.release]
+lto = true
